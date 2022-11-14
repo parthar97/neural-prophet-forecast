@@ -9,7 +9,6 @@ from datetime import datetime as dt
 # os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
 
 st.title('Time Series Forecasting with Neural Prophet')
-
 try:
     uploaded_file = st.sidebar.file_uploader("Upload your CSV file", type=["csv"])
     @st.experimental_memo
@@ -19,30 +18,31 @@ try:
 
     df=read_file(uploaded_file)
 
-    with st.expander("Select Date & Observed Value Columns",expanded=True):
+    with st.expander("Select Date & Observed Value",expanded=True):
         c1, c2 = st.columns((1, 1))
-        x=c1.selectbox('Select Date Column',df.columns)
-        y=c2.selectbox('Select Observed Value Column',df.columns)
+        x=c1.selectbox('Date',df.columns)
+        ycols=[cols for cols in df.columns if cols!=df.columns[0]]
+        y=c2.selectbox('Observed Value',ycols)
 
-    with st.expander("Select Event Names & their Dates",expanded=True):
+    with st.expander("Select Event Names & their Dates"):
         c3, c4 = st.columns((1, 1))
-        events1=c3.text_input('Event 1 Name')
+        events1=c3.text_input(label='Event 1 Name',value='New Year Eve')
         eventd1=c3.date_input(label='Event 1 Date Range: ',value=(dt(year=1990, month=1, day=1), 
                             dt(year=2023, month=1, day=30)),)
-        events2=c4.text_input('Event 2 Name')
+        events2=c4.text_input(label='Event 2 Name',value='Christmas')
         eventd2=c4.date_input(label='Event 2 Date Range: ',value=(dt(year=1990, month=1, day=1), 
                             dt(year=2023, month=1, day=30)),)
 
-    with st.expander("Select the Lower & Upper Window for the Events",expanded=True):
+    with st.expander("Select the Lower & Upper Window for the Events & Seasonality Factor"):
         c5, c6, c7 = st.columns((1, 1, 1))
         lw=c5.number_input('Lower Window',-10,0,-1)
         uw=c6.number_input('Upper Window',0,10,1)
-        mode=c7.selectbox('Select Seasonality',['Additive','Multiplicative'])
+        mode=c7.selectbox('Seasonality',['Additive','Multiplicative'])
 
-    with st.expander("Choose the Forecast Period with its Frequency",expanded=True):
+    with st.expander("Choose the Forecast Period with its Frequency"):
         c8, c9 = st.columns((1, 1))
         periods=c8.number_input('Forecast Period',0,365,30)
-        freq=c9.selectbox('Choose Frequency',["D","M","Y","s","min","H"])
+        freq=c9.selectbox('Frequency',["D","M","Y","s","min","H"])
 
     rmp=st.radio('Run Model',['n','y'])
 
@@ -88,3 +88,40 @@ try:
             st.write('Choose Something')
 except:
     st.write('Choose Something')
+
+st.sidebar.write('')
+st.sidebar.write('')
+st.sidebar.write('')
+st.sidebar.write('')
+st.sidebar.write('')
+st.sidebar.write('')
+st.sidebar.write('')
+st.sidebar.write('')
+st.sidebar.write('')
+st.sidebar.write('')
+st.sidebar.write('')
+st.sidebar.write('')
+st.sidebar.write('')
+st.sidebar.write('')
+st.sidebar.write('')
+st.sidebar.write('')
+st.sidebar.write('')
+st.sidebar.write('')
+st.sidebar.write('')
+st.sidebar.write('')
+st.sidebar.write('')
+st.sidebar.write('')
+st.sidebar.write('')
+st.sidebar.write('')
+st.sidebar.write('')
+st.sidebar.write('')
+st.sidebar.write('')
+st.sidebar.write('')
+st.sidebar.write('')
+st.sidebar.write('')
+st.sidebar.write('### **About**')
+st.sidebar.info(
+ """
+            Created by:
+            [Parthasarathy Ramamoorthy](https://www.linkedin.com/in/parthasarathyr97/) (Data Scientist @ Walmart Global Tech)
+        """)
