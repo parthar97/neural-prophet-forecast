@@ -5,8 +5,6 @@ from neuralprophet import set_random_seed
 import matplotlib.pyplot as plt
 import streamlit as st
 from datetime import datetime as dt
-import os
-os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
 
 lw=st.number_input('Lower Window',-10,0,-1)
 uw=st.number_input('Upper Window',0,10,1)
