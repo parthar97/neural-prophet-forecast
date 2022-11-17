@@ -95,7 +95,7 @@ try:
                 if forecast_df is not None:
                     st.download_button(label="Download data as CSV",data=forecast_df,file_name='NeuralProphet_with_events_results.csv',mime='text/csv',)
             except:
-                st.write('Choose Something')
+                st.warning('Choose Something')
 
     ##################################### Option 2 #####################################
     if option=='Forecasting with events':
@@ -193,11 +193,11 @@ try:
                 if forecast_df is not None:
                     st.download_button(label="Download data as CSV",data=forecast_df,file_name='NeuralProphet_with_events_results.csv',mime='text/csv',)
             except:
-                st.write('Choose Something')
+                st.warning('Choose Something')
 
 #####################################################        
 except:
-    st.write('Choose Something')
+    st.warning('Choose Something')
 
 st.sidebar.write('### **About**')
 st.sidebar.info(
