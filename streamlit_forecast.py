@@ -13,7 +13,7 @@ option=st.selectbox('Choose from the following',['Forecasting without events','F
 
 try:
     uploaded_file = st.sidebar.file_uploader("Upload your CSV file", type=["csv"])
-    @st.experimental_memo
+    @st.cache_data
     def read_file(uploaded_file):
         data2=pd.read_csv(uploaded_file)
         return data2
@@ -65,6 +65,8 @@ try:
             train_metrics = m.fit(df_train, freq=freq,)
             test_metrics = m.test(df_test,)
 
+            import warnings
+            warnings.filterwarnings("ignore")
             future = m.make_future_dataframe(df=df, n_historic_predictions=n_hist_pred_btn,periods=periods)
             forecast = m.predict(df=future) 
             final_train_metrics=train_metrics.iloc[len(train_metrics)-1:len(train_metrics)].reset_index(drop=True)
@@ -86,7 +88,7 @@ try:
             st.pyplot(fig_param)
             st.dataframe(forecast)
 
-            @st.experimental_memo
+            @st.cache_data
             def convert_df(df):
                 return df.to_csv(index=False).encode('utf-8')
 
@@ -166,6 +168,8 @@ try:
                     m=m.add_events([enames[i]],lower_window=lw,upper_window=uw,mode=mode)
             history_df = m.create_df_with_events(df, events_df)
             metrics=m.fit(history_df, freq=freq,)
+            import warnings
+            warnings.filterwarnings("ignore")            
             future = m.make_future_dataframe(df=history_df, events_df=events_df,n_historic_predictions=n_hist_pred,periods=periods)
             forecast = m.predict(df=future) 
             fig = m.plot(forecast)
@@ -184,7 +188,7 @@ try:
             st.pyplot(fig_param)
             st.dataframe(forecast)
 
-            @st.experimental_memo
+            @st.cache_data
             def convert_df(df):
                 return df.to_csv(index=False).encode('utf-8')
 
