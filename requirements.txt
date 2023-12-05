@@ -1,5 +1,5 @@
-neuralprophet==0.2.8
-pandas==1.5.3
-streamlit==1.28.0
-numpy==1.23.5
-matplotlib==3.3.4
+neuralprophet==0.2.1
+pandas
+streamlit
+numpy
+matplotlib
