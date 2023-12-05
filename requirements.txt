@@ -1,4 +1,4 @@
-neuralprophet
+neuralprophet==0.2.8
 pandas==1.5.3
 streamlit==1.28.0
 numpy==1.23.5
