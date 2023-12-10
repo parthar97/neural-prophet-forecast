@@ -5,12 +5,30 @@ from neuralprophet import set_random_seed
 import matplotlib.pyplot as plt
 import streamlit as st
 from datetime import datetime as dt
+import random 
+from openai import OpenAI
 # import os
 # os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
+import warnings
+warnings.filterwarnings("ignore")
+
+'''
+To Do:
+1. Pass neural prophet graphs to gpt-4 vision  
+2. Use session state variables where needed
+'''
 
 st.title('Time Series Forecasting with Neural Prophet')
 option=st.selectbox('Choose from the following',['Forecasting without events','Forecasting with events'])
 
+# Initialize session state for forecast DataFrame
+if 'forecast_df' not in st.session_state:
+    st.session_state.forecast_df = None
+if 'final_train_metrics' not in st.session_state:
+    st.session_state.final_train_metrics = None
+if 'final_test_metrics' not in st.session_state:    
+    st.session_state.final_test_metrics = None
+    
 try:
     uploaded_file = st.sidebar.file_uploader("Upload your CSV file", type=["csv"])
     @st.cache_data
@@ -72,8 +90,12 @@ try:
             final_train_metrics=train_metrics.iloc[len(train_metrics)-1:len(train_metrics)].reset_index(drop=True)
             final_test_metrics=test_metrics.iloc[len(test_metrics)-1:len(test_metrics)].reset_index(drop=True)    
 
-            fig = m.plot(forecast)
-            fig_comp = m.plot_components(forecast)
+            # Store the forecast DataFrame in session state after model runs
+            if forecast is not None:
+                st.session_state.forecast_df = forecast
+
+            fig = m.plot(st.session_state.forecast_df)
+            fig_comp = m.plot_components(st.session_state.forecast_df)
             fig_param = m.plot_parameters()
 
             st.header('Train Dataset Metrics')
@@ -86,19 +108,70 @@ try:
 
             st.header('Trend & Seasonality')
             st.pyplot(fig_param)
-            st.dataframe(forecast)
-
+            # st.dataframe(st.session_state.forecast_df)
             @st.cache_data
             def convert_df(df):
                 return df.to_csv(index=False).encode('utf-8')
 
-            try:
-                forecast_df = convert_df(forecast)
-                if forecast_df is not None:
-                    st.download_button(label="Download data as CSV",data=forecast_df,file_name='NeuralProphet_with_events_results.csv',mime='text/csv',)
-            except:
-                st.warning('Choose Something')
+            # Download button logic
+            if st.session_state.forecast_df is not None:
+                try:
+                    forecast_df = convert_df(st.session_state.forecast_df)
+                    st.download_button(label="Download data as CSV", data=forecast_df, file_name='NeuralProphet_without_events_results.csv', mime='text/csv')
+                except Exception as e:
+                    st.warning(f'Error in downloading file: {e}')
 
+        if st.session_state.forecast_df is not None:
+            st.header('Run GPT-4 Insights')
+            OPENAI_API_KEY = st.text_input("Enter OpenAI API Key", type="password")
+            gpt_btn = st.radio('',['n','y'])
+            if gpt_btn=='y':
+                # Quickstart to OpenAI API: https://platform.openai.com/docs/quickstart?context=python
+                def truncate_df_to_tokens(df, max_tokens=1000):
+                    df_string = df.to_string(index=False) # Convert DataFrame to string
+                    tokens = df_string.split() # Tokenize the string by spaces (a rough approximation)
+                    st.info('Total Input Tokens: {}\n'.format(len(tokens)))
+                    if len(tokens) > max_tokens: # Truncate the token list to the max tokens
+                        truncated_tokens = tokens[:max_tokens]
+                        truncated_string = ' '.join(truncated_tokens)
+                        truncated_string += ' ... [Truncated due to token limit]' # Add an indication that the text is truncated
+                    else:
+                        truncated_string = df_string
+                    return truncated_string
+
+                # Convert and truncate DataFrame
+                df_summary = truncate_df_to_tokens(st.session_state.forecast_df, max_tokens=1000)  # Example token limit
+
+                # Create the GPT-4 prompt
+                # fig, fig_param
+                prompt = """
+                    Here are the results of a forecast. 
+                    Forecast dataframe: {}
+                    Final Train Metrics: {}
+                    Final Test Metrics: {}
+                    Analyze these results & provide insights regarding the data, model, and any other information that might be useful.)
+                    """.format(df_summary,st.session_state.final_train_metrics,st.session_state.final_test_metrics)
+            
+                client = OpenAI(api_key=OPENAI_API_KEY)
+                completion = client.chat.completions.create(
+                model="gpt-4-vision-preview",
+                messages=[
+                    {"role": "system", "content": "You are a forecasting expert, skilled in explaining the results of a forecasting model from neural prophet package in python.\
+                        Explain them in a precise and concise manner (preferably under 200 words but use more words if information is useful.)."},
+                    {"role": "user", "content": prompt}
+                ],
+                max_tokens=1000
+                )
+
+                # Assuming 'completion' is the response from the OpenAI API
+                if completion.choices and completion.choices[0].message:
+                    response_text = completion.choices[0].message.content  # Access the actual text content
+                    for line in response_text.split('\n'):
+                        st.write(line)
+                else:
+                    st.write("No response received from the model.")
+        else:
+            st.warning('Run Model.')
     ##################################### Option 2 #####################################
     if option=='Forecasting with events':
 
@@ -200,8 +273,8 @@ try:
                 st.warning('Choose Something')
 
 #####################################################        
-except:
-    st.warning('Choose Something')
+except Exception as E:
+    st.warning('Choose Something. {}'.format(E))
 
 st.sidebar.write('### **About**')
 st.sidebar.info(
